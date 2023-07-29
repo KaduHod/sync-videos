@@ -1,21 +1,28 @@
 import "./config/global";
-import "./socket";
 import express from "express";
+import { createServer } from "http";
 import { engine } from "express-handlebars";
+import { Server } from "socket.io";
+import ServerController from "./app/controllers/serverController";
+import SocketController from "./app/controllers/socketController";
+
+const { APP_PORT } = process.env;
 
 const server = express();
 server.engine('.hbs', engine({ extname: ".hbs" }));
 server.set("view engine", ".hbs");
 server.set("views", "./public/views");
-server.use(express.static("./public/assets"))
+server.use(express.static("./public/assets"));
 
-server.get("/", (req, res) => {
-    res.render("home")
-})
+const httpServer = createServer(server);
+const socket = new Server(httpServer);
 
-const port = Number(process.env.APP_PORT ?? 8000);
+new ServerController(server);
+new SocketController(socket)
 
-server.listen(port, () => {
-    console.log(`Web server running on port ${port}`)
-    console.log(`Web socket server running on port ${process.env.SOCKET_PORT}`)
+const port = Number(APP_PORT ?? 8000);
+
+httpServer.listen(port, () => {
+    console.log(`Web server running on port http://localhost:${port}`)
+    console.log(`Web-socket server running on port ws://localhost:${port}`)
 })
