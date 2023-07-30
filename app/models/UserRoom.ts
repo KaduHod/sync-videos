@@ -21,7 +21,7 @@ export default class UserRoom {
         );
     }
 
-    public static async addUser(user: User, room: Room) {
+    public static async addUserToRoom(user: User, room: Room) {
         const [userExists, roomExists] = await Promise.all([
             User.getUser(user.id),  Room.getRoom(room.id)
         ]);
@@ -39,5 +39,17 @@ export default class UserRoom {
             userId: user.id,
             roomId: room.id
         })
+    }
+
+    public static async kickUserFromRoom(userID: string, roomID:string){
+        let userRooms = await UserRoom.getAll()
+        userRooms = userRooms.filter((userRoom) => {
+            return userRoom.roomID !== roomID && userRoom.userID !== userID
+        })
+
+        await writeFile(
+            UserRoom.usersRoomsFile, 
+            JSON.stringify(userRooms)
+        );
     }
 }

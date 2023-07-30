@@ -1,10 +1,22 @@
 <h1>Rooms</h1>
 
+<div id="room-info" style="display: none;">
+    <h2>Sala: <span id="current-room"></span></h2>
+    <input type="hidden" name="room-id" id="room-id" value="">
+    <button id="leave-room" >Sair da sala</button>
+</div>
+
+
+<button id="show-rooms">Mostrar salas</button>
+
 <form action="" name="create-room">
-    <input type="text" name="room-name">
-    <button name="send">Criar sala</button>
+    <input type="text" placeholder="Digite um nome para criar" name="room-name">
+    <button name="send" disabled >Criar sala</button>
 </form>
 
-<script type="module" src="js/create-room.js"></script>
+<ul id="rooms-list">
 
+</ul>
+
+<script type="module" src="js/create-room.js"></script>
 <script type="module" src="js/web-socket/client.js"></script>

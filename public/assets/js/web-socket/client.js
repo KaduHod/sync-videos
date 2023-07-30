@@ -1,13 +1,77 @@
 import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
 
 const socket = io();
+const form = document.forms['create-room'];
+const roomNameInput = form.elements['room-name'];
+const createRoomButton = form.elements['send'];
+const roomInfo = document.getElementById("room-info");
+const leaveRoom = document.getElementById("leave-room");
+const roomNameSpan = document.getElementById("current-room");
+const roomid = document.getElementById("room-id");
+const showRoomsButton = document.getElementById("show-rooms");
+const roomsList = document.getElementById('rooms-list')
 
-window.socket = socket
 
 socket.connect();
 
+showRoomsButton.addEventListener("click", () => {
+    socket.emit('get-rooms-request'); 
+    let showList = showRoomsButton.innerText === "Mostrar salas"
+    
+    if(showList) {
+        showRoomsButton.innerText = "Esconder salas";
+        roomsList.style.display = "";
+    } else {
+        showRoomsButton.innerText = "Mostrar salas";
+        roomsList.style.display = "none";
+    }
+})
+
+socket.on('get-rooms-response', (rooms) => {
+    console.log({rooms})
+    let list = "";
+
+    const disabled = !!roomid.value ? "disabled" : "";
+
+    for(const room of rooms) {
+        list+=`<li>
+            <span>${room.name}</span>
+            <button 
+                class="enter-room" 
+                data-room-name="${room.name}" 
+                data-room-id="${room.id}"
+                ${disabled}
+            >entrar</button>
+        </li>`
+    }
+
+    roomsList.innerHTML = list;
+
+    const buttons = [...document.getElementsByClassName('enter-room')]
+    buttons.forEach(button => {
+        button.addEventListener('click', ({target}) => {
+            const {roomName} = target.dataset
+            socket.emit("enter-room", roomName)
+        })
+    })
+})
+
+window.socket = socket;
+
 socket.on("connect", () => {
     console.log("Connected:",socket.connected)
+})
+
+socket.on('enter-room-response', (room) => {
+    console.log("room created:", room);
+    roomNameSpan.innerText = room.name;
+    roomInfo.style.display = ""
+    roomid.value = room.id;
+
+    const enterRoomButtons = [...document.getElementsByClassName('enter-room')]
+    enterRoomButtons.forEach(button => {
+        button.disabled = true;
+    })
 })
 
 socket.on("disconnect", () => {
@@ -18,22 +82,54 @@ socket.on("room-name-not-available", (...args) => {
     console.log("room-name-not-available",...args)
 })
 
-socket.on("unknown-error", (...args) => {
-    alert("unknow-error", ...args)
+socket.on("room-created", (room) => {
+    console.log("room created:", room);
+    roomNameSpan.innerText = room.name;
+    roomInfo.style.display = ""
+    roomid.value = room.id;
 })
 
-//socket.emit("create-room", "sala namorados", socket.id)
+socket.on("left-the-room", ({userID, roomID}) => {
+    console.log("user left the room", {userID, roomID});
+    roomNameSpan.innerText = "";
+    roomInfo.style.display = "none"
+    roomid.value = "";
+    const enterRoomButtons = [...document.getElementsByClassName('enter-room')]
+    enterRoomButtons.forEach(but => {
+        but.disabled = false;
+    })
+})
 
-const form = document.forms['create-room'];
-const roomNameInput = form.elements['room-name'];
-const createRoomButton = form.elements['send'];
+socket.on("unknown-error", (...args) => {
+   alert("unknow-error", ...args)
+})
+
+roomNameInput.addEventListener("input", event => {
+    createRoomButton.disabled = !roomNameInput.value || !roomid.value
+})
+
 form.addEventListener('submit', (event) => {
     event.preventDefault();
 })
+
 createRoomButton.addEventListener('click', (event) => {
+    if(roomid.value) {
+        return alert("Saia da sala para criar uma nova");
+    }
+
     if(!roomNameInput.value.trim()) {
         return alert("Escolha um nome para a sala antes de criar");
     }
 
     socket.emit("create-room", roomNameInput.value, socket.id)
+    roomNameInput.value = ""
+    createRoomButton.disabled = "true"
+});
+
+leaveRoom.addEventListener("click", () => {
+    socket.emit("leave-room", socket.id, roomid.value, roomNameSpan.innerText)
 })
+
+
+//===================================================
+

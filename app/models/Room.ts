@@ -14,7 +14,7 @@ export default class Room {
     public id: string;
     private createAt: Date;
     constructor(
-        private name: string,
+        public name: string,
         private owner: string
     ){
         this.id = v4();
@@ -31,6 +31,12 @@ export default class Room {
         return (
             await Room.getRooms()
         ).find((room) => room.id === id);
+    }
+
+    public static async getRoomByName(name: string) {
+        return (
+            await Room.getRooms()
+        ).find((room) => room.name === name);
     }
 
     public static async save(room: Room){
@@ -51,6 +57,6 @@ export default class Room {
     }    
 
     public static async addUser(user: User, room: Room) {
-        await UserRoom.addUser(user, room)
+        await UserRoom.addUserToRoom(user, room)
     }
 }
