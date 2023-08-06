@@ -11,7 +11,20 @@
                 <img  type="image/svg+xml" src="/img/play.svg"></img >
             </div>
         </div>
+        <div id="time-container">
+            <div class="time-counter">
+                <span id="minutes">00</span>:
+                <span id="seconds">00</span>
+            </div>
+            <span>/</span>
+            <div id="time-total" class="time-counter">
+                <span id="minutes-total">00</span>:
+                <span id="seconds-total">00</span>
+            </div>
+        </div>
+        
         <input id="video-range" type="range" min="0" max="100" value="0">
+        
     </div>
 
 <div id="inputs-container">
@@ -32,7 +45,7 @@
         const inputButton = document.createElement('button');
             inputButton.style.border = "1px solid red";
             inputButton.id = "put-video-button";
-            inputButton.innerText = "Put video";
+            inputButton.innerText = "Carregar vídeo";
 
         inputButton
             .addEventListener('click', buttonEventListener);
@@ -62,12 +75,23 @@
     const videoButtonListener = async () => {
         const {value} = document.getElementById('put-video');
         const id = getVideoId(value);
-        window.videoID = id
-        player.loadVideoById(id,0);
-        player.pauseVideo();
-        const {duration} = await window.getVideoDuration();
-        window.videoDuration = duration
+        await changeVideo(id);
+        window.clientSocket.emitChangeVideo()
     }
+
+    const changeVideo = async (videoID) => {
+        player.loadVideoById(videoID, 0);
+        player.pauseVideo();
+        window.videoID = videoID;
+        const { duration } = await window.getVideoDuration();
+        window.videoDuration = duration
+        const [minutos, segundos] = window.secondsToMinutesSeconds(duration)
+        window.tracker.setTotalTimer(
+            minutos.toString(), segundos.toString()
+        );
+    }
+
+    window.changeVideo = changeVideo;
 
     const [
         videoTextInput, 

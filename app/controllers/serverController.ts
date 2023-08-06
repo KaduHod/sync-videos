@@ -1,4 +1,5 @@
 import { Express, Request, Response } from "express";
+import { Catch } from "../../utils/errors";
 import YoutubeApi from "../services/youtubeAPI";
 
 export default class ServerController {
@@ -31,10 +32,25 @@ export default class ServerController {
         )
     }
 
+    //@Catch(ServerController.errorHandler)
     public async videoDuration(req: Request, res: Response) {
-        const {id} = req.query
-        return res.send(
-            {duration: await this.youtubeService.getVideoDuration(id as string)}
-        )
+        try {
+            const {id} = req.query
+            return res.send(
+                {duration: await this.youtubeService.getVideoDuration(id as string)}
+            )
+        } catch (error) {
+            console.log({error})
+            return res
+                .status(400)
+                .send({error:'invalid video'})
+        }
+        
+    }
+
+    static async errorHandler(error:any){
+        if(error.constructor.name === "InvalidVideoError") {
+            
+        }
     }
 }

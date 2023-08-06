@@ -14,29 +14,69 @@ class VideoPlayerTracker {
 			pause: document.getElementById('pause-icon'),
 		}
 		this.range = document.getElementById('video-range');
-		this.range.addEventListener('input', this.trackRange.bind(this))
-		this.icons.play.addEventListener('click', this.pause.bind(this))
-		this.icons.pause.addEventListener('click', this.play.bind(this))
-		this.player = window.player
+		this.range.addEventListener('input', this.trackRange.bind(this));
+		this.range.addEventListener('mouseover', this.showRangeValue.bind(this));
+		this.range.addEventListener('mouseout', this.hideRangeValue.bind(this));
+		this.timeCounter = document.getElementById("time-counter");
+		this.minutes = document.getElementById("minutes");
+		this.seconds = document.getElementById("seconds");
+		this.totalMinutes = document.getElementById("minutes-total");
+		this.totalSeconds = document.getElementById("seconds-total");
+		this.icons.play.addEventListener('click', this.playVideo.bind(this));
+		this.icons.pause.addEventListener('click', this.pauseVideo.bind(this));
+		this.player = window.player;
 		this.videoDuration = null;
+		console.log(this)
 	}
 
-	play() {
+	setTotalTimer(minutes, seconds){
+		this.totalMinutes.textContent = minutes;
+		this.totalSeconds.textContent = seconds;
+	}
+
+	setMinutes(minutes){
+		this.minutes.textContent = minutes
+	}
+
+	setSeconds(seconds){
+		this.seconds.textContent = seconds
+	}
+
+	showRangeValue(){
+		this.range.textContent = this.range.value
+	}
+
+	hideRangeValue(){
+		this.range.textContent = ""
+	}
+
+	playVideo() {
 		this.setVideoDuration();
-		this.icons.pause.style.display = "none"
-		this.icons.play.style.display = ""
+		this.playFeature()
+		window.player.playVideo();
+		window.clientSocket.emitPlayVideo();
+	}
+
+	playFeature(){
+		this.icons.play.style.display = "none"
+		this.icons.pause.style.display = ""
 	}
 
 	setVideoDuration(){
 		const videoDuration = window.videoDuration;
-		console.log({videoDuration})
 	    this.range.max = videoDuration;
     }
 
-	pause() {
+	pauseVideo() {
 		this.setVideoDuration();
-		this.icons.play.style.display = "none"
-		this.icons.pause.style.display = ""
+		this.pauseFeature()
+		window.player.pauseVideo();
+		window.clientSocket.emitPauseVideo();
+	}
+
+	pauseFeature(){
+		this.icons.pause.style.display = "none"
+		this.icons.play.style.display = ""
 	}
 
 	setRange(value) {
@@ -52,7 +92,6 @@ class VideoPlayerTracker {
 		return this.range.value;
 	}
 }
-
 
 const YT_STATES = {
 	"-1": "nao iniciado",
@@ -96,7 +135,6 @@ function onYouTubeIframeAPIReady() {
 	window.player.addEventListener('onStateChange', (event) => {
 		currentState = YT_STATES[event.data];
 		log({ currentState })
-		handlerAction(currentState);
 		lastState = currentState
 	})
 }
@@ -138,28 +176,28 @@ function trackTimeChange(event) {
 	if (event.origin !== "https://www.youtube.com") return;
 	const data = JSON.parse(event.data);
 	event.data = data
-	if (!data.info.currentTime) return;
-	currentTime = data.info.currentTime
-	tracker.setRange(currentTime.toString())
-	//console.log(tracker.getCurrentTime())
-	//log({currentTime, lastTimeTracked})
-	if (lastTimeTracked === currentTime || currentState === "em reprodução") return
-	if (currentState === "alterou tempo em pausa" && lastState === "em pausa") return
-	//usuario mudou o tempo do video em pausa
-	handlerAction();
-
+	if (!data?.info?.currentTime) return;
+	currentTime = data.info.currentTime;
+	const totalSeconds = currentTime.toString()
+	tracker.setRange(totalSeconds);
+	const [minutes, seconds] = secondsToMinutesSeconds(totalSeconds);
+	tracker.setMinutes(minutes.toString());
+	tracker.setSeconds(seconds.toString());
 	lastTimeTracked = currentTime;
-
 }
 
+function secondsToMinutesSeconds(segundos) {
+	const minutos = Math.floor(segundos / 60);
+	const segundosRestantes = segundos % 60;
+	const formatoMinutos = minutos < 10 ? `0${minutos}` : minutos;
+	const formatoSegundos = segundosRestantes < 10 
+		? `0${Math.floor(segundosRestantes)}` 
+		: Math.floor(segundosRestantes);
+	return [ formatoMinutos, formatoSegundos ];
+}
+
+window.secondsToMinutesSeconds = secondsToMinutesSeconds;
+
 const tracker = new VideoPlayerTracker("player-tracker")
-
-tracker.icons.play.addEventListener('click', () => {
-	window.player.playVideo();
-})
-
-tracker.icons.pause.addEventListener('click', () => {
-	window.player.pauseVideo();
-})
 
 window.tracker = tracker

@@ -1,4 +1,5 @@
 import { converISO8602 } from "../../utils/time";
+
 export default class YoutubeApi {
     constructor(){}
 
@@ -10,6 +11,10 @@ export default class YoutubeApi {
 
     public async getVideoDuration(id:string){
         const res = await this.getVideoInfo(id);
-        return converISO8602(res.items[0].contentDetails.duration);
+        if(res.items[0].contentDetails.duration) {
+            return converISO8602(res.items[0].contentDetails.duration);
+        }
+        
+        throw {message: "Invlaid video" + id }
     }
 }

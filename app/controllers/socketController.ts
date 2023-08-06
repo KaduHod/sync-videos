@@ -43,7 +43,7 @@ export default class SocketController {
         userSocket: SocketIncommingRequest,
         time: string
     ){
-        console.log({time})
+        console.log("play")
         userSocket.broadcast.emit("play-video", userSocket.id, time);
     }
 
@@ -51,14 +51,16 @@ export default class SocketController {
         userSocket: SocketIncommingRequest,
         time: string
     ){
-        console.log({time})
+        console.log("pause")
         userSocket.broadcast.emit("pause-video", userSocket.id, time);
     }
 
+    @Catch(SocketController.errorHandler)
     async changeVideo(
         userSocket: SocketIncommingRequest,
         videoID: string,
     ){
+        console.log("skdjlksajdjs", {videoID})
         userSocket.broadcast.emit("change-video", videoID);
     }
 
