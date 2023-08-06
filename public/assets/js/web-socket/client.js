@@ -9,10 +9,38 @@ const leaveRoom = document.getElementById("leave-room");
 const roomNameSpan = document.getElementById("current-room");
 const roomid = document.getElementById("room-id");
 const showRoomsButton = document.getElementById("show-rooms");
-const roomsList = document.getElementById('rooms-list')
+const roomsList = document.getElementById('rooms-list');
+const changeVideoButton = document.getElementById('change-video-button');
+const changeVideoinput = document.getElementById('change-video');
+
 
 
 socket.connect();
+
+window.socket = socket
+
+changeVideoButton.addEventListener('click', () => {
+    console.log("aqui", changeVideoinput.value)
+    const id = YouTubeGetID(changeVideoinput.value)
+    window.player.loadVideoById(id,0);
+    socket.emit('change-video', id);
+    window.player.pauseVideo();
+})
+
+socket.on('change-video', (id) => {
+    window.player.loadVideoById(id,0);
+    window.player.pauseVideo();
+})
+
+socket.on('play-video', (time) => {
+    window.player.seekTo(time);
+    window.player.playVideo();
+})
+
+socket.on('pause-video', (time) => {
+    window.player.seekTo(time);
+    window.player.pauseVideo();
+})
 
 showRoomsButton.addEventListener("click", () => {
     socket.emit('get-rooms-request'); 
@@ -27,8 +55,11 @@ showRoomsButton.addEventListener("click", () => {
     }
 })
 
+socket.on("change-video", (videoID) => {
+    console.log(`Change video:${videoID}`)
+})
+
 socket.on('get-rooms-response', (rooms) => {
-    console.log({rooms})
     let list = "";
 
     const disabled = !!roomid.value ? "disabled" : "";
@@ -37,10 +68,10 @@ socket.on('get-rooms-response', (rooms) => {
         list+=`<li>
             <span>${room.name}</span>
             <button 
-                class="enter-room" 
                 data-room-name="${room.name}" 
                 data-room-id="${room.id}"
                 ${disabled}
+                class="enter-room rounded-sm bg-slate-900 text-white w-32 hover:scale-95"
             >entrar</button>
         </li>`
     }
@@ -72,6 +103,7 @@ socket.on('enter-room-response', (room) => {
     enterRoomButtons.forEach(button => {
         button.disabled = true;
     })
+
 })
 
 socket.on("disconnect", () => {
@@ -131,5 +163,7 @@ leaveRoom.addEventListener("click", () => {
 })
 
 
-//===================================================
-
+function YouTubeGetID(url){
+    url = url.split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/);
+    return (url[2] !== undefined) ? url[2].split(/[^0-9a-z_\-]/i)[0] : url[0];
+}

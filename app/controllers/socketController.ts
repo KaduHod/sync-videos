@@ -26,11 +26,40 @@ export default class SocketController {
     }
 
     async onConnect(socket:SocketIncommingRequest){
-        console.log(`user connected: ${socket.id}`,process.env.ROOT_DIR)
+        console.log(`user connected: ${socket.id}`)
         socket.on("create-room", this.createRoom.bind(this, socket));
         socket.on("enter-room", this.joinRoom.bind(this, socket));
         socket.on("leave-room", this.leaveRoom.bind(this, socket));
         socket.on("get-rooms-request", this.showRooms.bind(this, socket));
+
+        socket.on("change-video", this.changeVideo.bind(this, socket));
+        socket.on("play-video", this.playVideo.bind(this, socket));
+        socket.on("pause-video", this.pauseVideo.bind(this, socket));
+        socket.on('change-video-time', () => {})
+        socket.on('change-video-time-and-playing', () => {})
+    }
+
+    async playVideo(
+        userSocket: SocketIncommingRequest,
+        time: string
+    ){
+        console.log({time})
+        userSocket.broadcast.emit("play-video", userSocket.id, time);
+    }
+
+    async pauseVideo(
+        userSocket: SocketIncommingRequest,
+        time: string
+    ){
+        console.log({time})
+        userSocket.broadcast.emit("pause-video", userSocket.id, time);
+    }
+
+    async changeVideo(
+        userSocket: SocketIncommingRequest,
+        videoID: string,
+    ){
+        userSocket.broadcast.emit("change-video", videoID);
     }
 
     @Catch(SocketController.errorHandler)
@@ -82,7 +111,7 @@ export default class SocketController {
         if(!room) {
             throw { message: `${roomID} not finded!`}
         }
-        
+
         await userSocket.leave(room.name);
 
         this.server.emit("left-the-room",{id: userSocket.id, roomID});

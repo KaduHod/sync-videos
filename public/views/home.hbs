@@ -1,4 +1,77 @@
 <h1>Web server</h1>
+
 <div id="player"></div>
 
+<div id="player-tracker">
+        <div id="action">
+            <div class="icon" id="pause-icon" style="display: none;">
+                <img  type="image/svg+xml" src="/img/pause.svg"></img >
+            </div>
+            <div class="icon" id="play-icon" >
+                <img  type="image/svg+xml" src="/img/play.svg"></img >
+            </div>
+        </div>
+        <input id="video-range" type="range" min="0" max="100" value="0">
+    </div>
+
+<div id="inputs-container">
+
+</div>
+
+<script type="module" src="js/web-socket/client-2.js"></script>
 <script src="js/youtube.js"></script>
+
+<script>
+    function initInputs(buttonEventListener){
+        const inputText = document.createElement('input');
+            inputText.style.border = "1px solid red";
+            inputText.type = 'text';
+            inputText.id = "put-video";
+            inputText.value = "https://www.youtube.com/watch?v=5n5y1JaIjWc";
+
+        const inputButton = document.createElement('button');
+            inputButton.style.border = "1px solid red";
+            inputButton.id = "put-video-button";
+            inputButton.innerText = "Put video";
+
+        inputButton
+            .addEventListener('click', buttonEventListener);
+
+        document.getElementById('inputs-container')
+            .appendChild(inputText);
+        document.getElementById('inputs-container')
+            .appendChild(inputButton);
+
+        return [inputText, inputButton];
+    }
+
+    const getVideoId = (url) => {
+        url = url.split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/);
+        console.log({url});
+        return (url[2] !== undefined) 
+            ? url[2].split(/[^0-9a-z_\-]/i)[0] 
+            : url[0];
+    }
+
+    window.getVideoDuration = async () => {
+        return await (
+            await fetch('http://localhost:8000/video-duration?id=' + window.videoID)
+        ).json();
+    }
+
+    const videoButtonListener = async () => {
+        const {value} = document.getElementById('put-video');
+        const id = getVideoId(value);
+        window.videoID = id
+        player.loadVideoById(id,0);
+        player.pauseVideo();
+        const {duration} = await window.getVideoDuration();
+        window.videoDuration = duration
+    }
+
+    const [
+        videoTextInput, 
+        videoButtonInput
+    ] = initInputs(videoButtonListener)
+    
+</script>

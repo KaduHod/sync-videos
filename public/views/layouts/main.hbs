@@ -5,10 +5,29 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sync videos</title>
+    <style>
+        #player-tracker{
+            width: 640px;
+            border: 1px solid red;
+            height: 50px;
+            display: flex;
+        }
+        .icon:hover{
+            cursor: pointer;
+        }
+        #action{
+            border: 1px solid blue;
+        }
+        #player-tracker input[type=range] {
+            width: 100%;
+        }
+    </style>
 </head>
 <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
-<script type="module" src="js/web-socket/client.js"></script>
+{{!-- <script type="module" src="js/web-socket/client.js"></script> --}}
+<script src="https://cdn.tailwindcss.com"></script>
 <body>
     {{{ body }}}
+    
 </body>
 </html>

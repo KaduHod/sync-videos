@@ -1,22 +1,60 @@
-<h1>Rooms</h1>
+<div class="flex flex-col w-100 border-2 border-red-500 p-5 font-mono">
+    <h1>Rooms</h1>
+    <div class="flex flex-col border-blue-500 border-2">
+        <div id="room-info" style="display: none;">
+            <h2 class="m-2">Sala: <span id="current-room"></span></h2>
+            <input 
+                class="border-2 border-slate-900 m-2"
+                type="hidden" 
+                name="room-id" 
+                id="room-id" 
+                value=""
+            >
+            <button 
+                class="rounded-sm bg-slate-900 text-white w-32 hover:scale-95 m-2" 
+                id="leave-room" 
+            >Sair da sala</button>
+        </div>
 
-<div id="room-info" style="display: none;">
-    <h2>Sala: <span id="current-room"></span></h2>
-    <input type="hidden" name="room-id" id="room-id" value="">
-    <button id="leave-room" >Sair da sala</button>
+        <button 
+            id="show-rooms" 
+            class="rounded-sm bg-slate-900 text-white w-32 hover:scale-95 m-2"
+        >Mostrar salas</button>
+
+        <ul id="rooms-list" class="m-2">
+        
+        </ul>
+
+        <form action="" name="create-room">
+            <input 
+                class="border-2 border-slate-900 m-2 rounded-sm"
+                type="text" 
+                placeholder="Digite um nome para criar" 
+                name="room-name"
+            >
+            <button 
+                name="send" 
+                disabled 
+                class="rounded-sm bg-slate-900 text-white w-32 hover:scale-95 m-2" 
+            >Criar sala</button>
+        </form>
+
+
+        <div>
+            <input 
+                type="text" 
+                name="change-video" 
+                id="change-video" 
+                value=""
+                class="border-2 border-slate-900 m-2 rounded-sm"
+            >
+            <button id="change-video-button">change video</button>
+        </div>
+    </div>
+    <div class="border-red-500 border-2">
+        <div id="player"></div>
+    </div>
 </div>
 
-
-<button id="show-rooms">Mostrar salas</button>
-
-<form action="" name="create-room">
-    <input type="text" placeholder="Digite um nome para criar" name="room-name">
-    <button name="send" disabled >Criar sala</button>
-</form>
-
-<ul id="rooms-list">
-
-</ul>
-
-<script type="module" src="js/create-room.js"></script>
+<script src="js/youtube.js"></script>
 <script type="module" src="js/web-socket/client.js"></script>
